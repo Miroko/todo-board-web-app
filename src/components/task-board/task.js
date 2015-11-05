@@ -1,0 +1,127 @@
+import React from 'react';
+import { Input, Button } from 'react-bootstrap';
+
+const Task = React.createClass({
+  getInitialState: function(){
+    return({
+      updateTextTimeout: null,
+      updateIsDoneTimeout: null
+     });
+  },
+  componentDidMount(){
+    this.expandTextAreaToText();
+  },
+  expandTextAreaToText: function(){
+    const element = this.refs.taskText.refs.input;
+    const style = window.getComputedStyle(element);
+    if(element.scrollHeight > parseInt(style.height)){
+      element.style.height = String(element.scrollHeight) + "px";
+    }
+  },
+  updateText: function(newText){
+    this.props.updateTaskText(
+      this.props.boardId,
+      this.props.listId,
+      this.props.taskId,
+      newText);
+  },
+  startUpdateText: function(){
+    const newText = this.refs.taskText.refs.input.value;
+
+    if(this.state.updateTextTimeout === null){
+      //delete task if text empty
+      if(newText === ""){
+        this.props.deleteTask(
+          this.props.boardId,
+          this.props.listId,
+          this.props.taskId);
+        return; //deleted -> return
+      }
+      //create new task if text added to empty
+      if(this.props.text === ""){
+        this.props.createTask(
+          this.props.boardId,
+          this.props.listId,
+          "",
+          false);
+      }
+    }
+
+    this.setState(prevState =>{
+      window.clearTimeout(prevState.updateTextTimeout);
+      return { updateTextTimeout: window.setTimeout(() =>{
+        this.updateText(newText);
+        this.setState({ updateTextTimeout: null });
+      }, this.props.updateRate
+      )};
+    });
+
+    this.expandTextAreaToText();
+  },
+  updateIsDone: function(newIsDone){
+    this.props.updateTaskIsDone(
+      this.props.boardId,
+      this.props.listId,
+      this.props.taskId,
+      newIsDone);
+  },
+  startUpdateIsDone: function(){
+    const newIsDone = !this.props.isDone;
+    if(this.state.updateIsDoneTimeout === null){
+      this.updateIsDone(newIsDone);
+    }
+
+    this.setState(prevState =>{
+      window.clearTimeout(prevState.updateIsDoneTimeout);
+      return { updateIsDoneTimeout: window.setTimeout(() =>{
+        this.updateIsDone(newIsDone);
+        this.setState({ updateIsDoneTimeout: null });
+        }, this.props.updateRate
+      )};
+    });
+  },
+  shouldComponentUpdate: function(nextProps, nextState) {
+    if(this.props.updateData.taskEditedId === null) return true;
+    else if(this.props.updateData.taskEditedId === this.props.taskId) return true;
+    return false;
+  },
+  render: function(){
+    const textAreaWithButton =
+    <span className="task">
+      <Input
+      className="task-text"
+      ref="taskText"
+      type="textarea"
+      placeholder={this.props.placeholder}
+      defaultValue={this.props.text}
+      onChange={this.startUpdateText}
+      bsStyle={(()=>{
+          if(this.props.text === "") return null;
+          else if(this.props.isDone) return "success";
+          else                       return "error";
+      })()}
+      addonAfter={
+        <Button
+        className="task-button"
+        onClick={this.startUpdateIsDone}
+        disabled={this.props.text === "" ? true : false}
+        bsStyle={(()=>{
+            if(this.props.text === "") return null;
+            else if(this.props.isDone) return "success";
+            else                       return "danger";
+        })()}
+        >
+        {(()=>{
+          if(this.props.text === "") return "Todo";
+          else if(this.props.isDone) return "Undo";
+          else                       return "Done";
+          }
+        )()}
+        </Button>}
+      />
+    </span>
+    return(textAreaWithButton);
+  }
+})
+
+export default Task;

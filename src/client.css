@@ -1,0 +1,39 @@
+
+.board-carousel{
+  .carousel-control {
+    position: fixed;
+    width: 40px;
+  }
+}
+
+.board{
+  .board-grid-cell{
+    padding: 3px;
+  }
+  .board-grid{
+    padding: 45px;
+  }
+}
+
+.task-list{
+  .panel-heading{
+    padding: 10px;
+  }
+  .panel-body{
+    padding: 0px;
+  }
+  .form-group{
+    margin: 1px;
+  }
+}
+
+.task{
+  margin: 0px;
+  .task-text{
+    overflow: hidden;
+    resize: vertical;
+  }
+  .task-button{
+
+  }
+}
