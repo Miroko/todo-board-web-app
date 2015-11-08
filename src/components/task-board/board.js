@@ -9,6 +9,7 @@ const Board = React.createClass({
   },
   updateTitle: function(newTitle){
     this.props.updateBoardTitle(
+      this.props.userId,
       this.props.boardId,
       newTitle);
   },
@@ -26,6 +27,7 @@ const Board = React.createClass({
   },
   addNewList: function(){
     this.props.createTaskList(
+      this.props.userId,
       this.props.boardId);
   },
   render: function(){
@@ -42,9 +44,11 @@ const Board = React.createClass({
         <Grid className="board-grid">
           {
             this.props.taskLists.map((taskList, index) =>
-            <Col className="board-grid-cell" key={taskList.id} xs={6} sm={6} md={4} lg={3} >
+            <Col
+            className="board-grid-cell"
+            key={taskList.id} xs={6} sm={6} md={4} lg={3} >
               <TaskList
-              key={taskList.id}
+              userId={this.props.userId}
               boardId={this.props.boardId}
               listId={taskList.id}
               title={taskList.title}

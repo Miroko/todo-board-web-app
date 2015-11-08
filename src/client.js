@@ -12,7 +12,7 @@ const history = createHistory();
 
 const routes = (
   <Router history={history}>
-    <Route path="/:boardId" component={TodoApp}>
+    <Route path="/:userId" component={TodoApp}>
     </Route>
   </Router>
 );

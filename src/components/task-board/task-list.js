@@ -9,6 +9,7 @@ const List = React.createClass({
   },
   updateTitle: function(newTitle){
     this.props.updateTaskListTitle(
+      this.props.userId,
       this.props.boardId,
       this.props.listId,
       newTitle);
@@ -27,6 +28,7 @@ const List = React.createClass({
   },
   removeList: function(){
     this.props.deleteTaskList(
+      this.props.userId,
       this.props.boardId,
       this.props.listId);
   },
@@ -57,6 +59,7 @@ const List = React.createClass({
          this.props.tasks.map((task, index) =>
          <Task
          key={task.id}
+         userId={this.props.userId}
          boardId={this.props.boardId}
          listId={this.props.listId}
          taskId={task.id}

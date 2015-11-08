@@ -20,6 +20,7 @@ const Task = React.createClass({
   },
   updateText: function(newText){
     this.props.updateTaskText(
+      this.props.userId,
       this.props.boardId,
       this.props.listId,
       this.props.taskId,
@@ -32,6 +33,7 @@ const Task = React.createClass({
       //delete task if text empty
       if(newText === ""){
         this.props.deleteTask(
+          this.props.userId,
           this.props.boardId,
           this.props.listId,
           this.props.taskId);
@@ -40,6 +42,7 @@ const Task = React.createClass({
       //create new task if text added to empty
       if(this.props.text === ""){
         this.props.createTask(
+          this.props.userId,
           this.props.boardId,
           this.props.listId,
           "",
@@ -60,6 +63,7 @@ const Task = React.createClass({
   },
   updateIsDone: function(newIsDone){
     this.props.updateTaskIsDone(
+      this.props.userId,
       this.props.boardId,
       this.props.listId,
       this.props.taskId,
@@ -67,6 +71,7 @@ const Task = React.createClass({
   },
   startUpdateIsDone: function(){
     const newIsDone = !this.props.isDone;
+
     if(this.state.updateIsDoneTimeout === null){
       this.updateIsDone(newIsDone);
     }

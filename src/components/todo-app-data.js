@@ -1,4 +1,5 @@
 
+import Api from '../api'
 
 const Task = {
   id: null,
@@ -93,28 +94,70 @@ const Board = {
 }
 
 const TodoAppData = {
+  userId: null,
   userBoardIds: [],
   loadedBoards: [],
+  currentBoardIndex: null,
 
   isEmpty: function(){
     return this.loadedBoards.length === 0;
-  },
-
-  //LOAD
-  loadUserBoardIds: function(){
-
-  },
-  loadBoards: function(){
-
   },
 
   //RESET
   reset: function(){
     this.userBoardIds = [];
     this.loadedBoards = [];
+    this.currentBoardIndex = 0;
+  },
+
+  //LOAD
+  loadUser: function(userId){
+    return new Promise((resolve, reject) => {
+      return Api.getUser(userId)
+      .then(userJSON => {
+          this.userId = userJSON.id;
+          this.userBoardIds = userJSON.boardIds;
+          resolve(true);
+      });
+    });
+  },
+  loadNextBoard: function(){
+    this.currentBoardIndex++;
+    if(this.currentBoardIndex > this.userBoardIds.length - 1){
+      this.currentBoardIndex = 0;
+    }
+  },
+  loadPreviousBoard: function(){
+    this.currentBoardIndex--;
+    if(this.currentBoardIndex < 0){
+      this.currentBoardIndex = this.userBoardIds.length - 1;
+    }
+  },
+  loadBoards: function(){
+    let requests = [];
+    this.userBoardIds.forEach(boardId =>{
+      requests.push(new Promise((resolve, reject) => {
+        return Api.getBoard(this.userId, boardId).then(boardJSON => {
+          return resolve(boardJSON);
+        });
+      }));
+    });
+    return Promise.all(requests).then(boardJSONs => {
+      boardJSONs.forEach(boardJSON =>{
+        this.addBoard(boardJSON.id, boardJSON.title, boardJSON.taskLists);
+      });
+      return true;
+    });
   },
 
   //GET
+  getBoardsForCarousel: function(){
+    return this.loadedBoards;
+  },
+  getCurrentBoard: function(){
+    return this.loadedBoards[this.currentBoardIndex];
+  },
+
   getBoard: function(boardId){
     return this.loadedBoards.find(board =>{
       return board.id === boardId;
@@ -154,7 +197,7 @@ const TodoAppData = {
   deleteBoard: function(boardId){
     return this.loadedBoards.some((board, index, array) =>{
       if(board.id === boardId){
-        delete array[index];
+        array.splice(index, 1);
         return true;
       }
       else return false;
