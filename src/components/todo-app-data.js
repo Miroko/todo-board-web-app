@@ -78,8 +78,6 @@ const Board = {
     });
   },
   sortByUndoneTasks: function(){
-    this.sortByTasksAmount();
-
     this.taskLists.sort((listA, listB) =>{
       const unDoneTaskAmount = function(list){
         let undoneAmount = 0;
@@ -88,7 +86,13 @@ const Board = {
         });
         return undoneAmount;
       }
-      return unDoneTaskAmount(listB) - unDoneTaskAmount(listA);
+      const unDoneTasksDifference = unDoneTaskAmount(listB) - unDoneTaskAmount(listA);
+      if(unDoneTasksDifference === 0){
+        return listB.tasks.length - listA.tasks.length;
+      }
+      else{
+        return unDoneTasksDifference;
+      }
     });
   }
 }
@@ -121,18 +125,6 @@ const TodoAppData = {
       });
     });
   },
-  loadNextBoard: function(){
-    this.currentBoardIndex++;
-    if(this.currentBoardIndex > this.userBoardIds.length - 1){
-      this.currentBoardIndex = 0;
-    }
-  },
-  loadPreviousBoard: function(){
-    this.currentBoardIndex--;
-    if(this.currentBoardIndex < 0){
-      this.currentBoardIndex = this.userBoardIds.length - 1;
-    }
-  },
   loadBoards: function(){
     let requests = [];
     this.userBoardIds.forEach(boardId =>{
@@ -148,6 +140,29 @@ const TodoAppData = {
       });
       return true;
     });
+  },
+
+  //SELECT
+  selectNextBoard: function(){
+    this.currentBoardIndex++;
+    if(this.currentBoardIndex > this.userBoardIds.length - 1){
+      this.currentBoardIndex = 0;
+    }
+  },
+  selectPreviousBoard: function(){
+    this.currentBoardIndex--;
+    if(this.currentBoardIndex < 0){
+      this.currentBoardIndex = this.userBoardIds.length - 1;
+    }
+  },
+  selectBoard: function(boardId){
+    for(let index = 0; index <= this.userBoardIds.length - 1; index++){
+      if(this.userBoardIds[index] === boardId){
+          this.currentBoardIndex = index;
+          return index;
+      }
+    }
+    return -1;
   },
 
   //GET

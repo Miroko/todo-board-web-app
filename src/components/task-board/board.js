@@ -25,11 +25,6 @@ const Board = React.createClass({
       )};
     });
   },
-  addNewList: function(){
-    this.props.createTaskList(
-      this.props.userId,
-      this.props.boardId);
-  },
   render: function(){
     return(
       <span className="board">
@@ -46,7 +41,7 @@ const Board = React.createClass({
             this.props.taskLists.map((taskList, index) =>
             <Col
             className="board-grid-cell"
-            key={taskList.id} xs={6} sm={6} md={4} lg={3} >
+            key={taskList.id} xs={12} sm={6} md={4} lg={3} >
               <TaskList
               userId={this.props.userId}
               boardId={this.props.boardId}
@@ -70,9 +65,6 @@ const Board = React.createClass({
               />
             </Col>)
           }
-          <Col className="board-grid-cell" xs={12}>
-            <Button bsSize="large" onClick={this.addNewList}>Add new list</Button>
-          </Col>
         </Grid>
       </span>
     )

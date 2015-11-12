@@ -1,5 +1,5 @@
 import React from 'react';
-import { Carousel, CarouselItem } from 'react-bootstrap';
+import { Carousel, CarouselItem, Navbar, Nav, NavItem } from 'react-bootstrap';
 
 import Api from '../api'
 import Board from './task-board/board'
@@ -24,59 +24,82 @@ const TodoApp = React.createClass({
       data: TodoAppData,
       UpdateData });
   },
-  carouselOnSelect(selectedIndex, selectedDirection) {
-    if(selectedDirection === "next") this.state.data.loadNextBoard();
-    else if(selectedDirection === "prev") this.state.data.loadPreviousBoard();
+  carouselOnSelect: function(selectedIndex, selectedDirection) {
+    if(selectedDirection === "next") this.state.data.selectNextBoard();
+    else if(selectedDirection === "prev") this.state.data.selectPreviousBoard();
     else return;
 
+    this.carouselSlideTo(selectedIndex, selectedDirection);
+  },
+  carouselSlideTo: function(index, slideDirection){
     this.state.data.getCurrentBoard().sortByUndoneTasks();
 
     this.setState({
-      index: selectedIndex,
-      direction: selectedDirection
+      index: index,
+      direction: slideDirection
+    });
+  },
+  addNewListToCurrentBoard: function(){
+    this.createTaskList(
+      this.state.data.userId,
+      this.state.data.getCurrentBoard().id);
+  },
+  addNewBoardToCurrentBoard: function(){
+    this.createBoard(this.state.data.userId)
+    .then(board =>{
+      const index = this.state.data.selectBoard(board.id);
+      this.carouselSlideTo(index, "next");
     });
   },
   render: function() {
     if(this.state.data.isEmpty()) return null;
 
     return (
-      <Carousel
-      className="board-carousel"
-      activeIndex={this.state.index}
-      direction={this.state.direction}
-      onSelect={this.carouselOnSelect}>
-        {
-          this.state.data.getBoardsForCarousel().map((board, index) =>
-            <CarouselItem
-            key={index}
-            index={index}>
-              <Board
-              userId={this.state.data.userId}
-              boardId={board.id}
-              title={board.title}
-              taskLists={board.taskLists}
+      <span>
+        <Navbar className="navbar-fixed-top">
+          <Nav>
+            <NavItem className="btn" onClick={this.addNewListToCurrentBoard}>New List</NavItem>
+            <NavItem className="btn" onClick={this.addNewBoardToCurrentBoard}>New Board</NavItem>
+          </Nav>
+        </Navbar>
+        <Carousel
+        className="board-carousel"
+        activeIndex={this.state.index}
+        direction={this.state.direction}
+        onSelect={this.carouselOnSelect}>
+          {
+            this.state.data.getBoardsForCarousel().map((board, index) =>
+              <CarouselItem
+              key={index}
+              index={index}>
+                <Board
+                userId={this.state.data.userId}
+                boardId={board.id}
+                title={board.title}
+                taskLists={board.taskLists}
 
-              //render
-              updateRate={500}
-              updateData={this.state.UpdateData}
+                //render
+                updateRate={500}
+                updateData={this.state.UpdateData}
 
-              //board functions
-              updateBoardTitle={this.updateBoardTitle}
+                //board functions
+                updateBoardTitle={this.updateBoardTitle}
 
-              //list functions
-              createTaskList={this.createTaskList}
-              updateTaskListTitle={this.updateTaskListTitle}
-              deleteTaskList={this.deleteTaskList}
+                //list functions
+                createTaskList={this.createTaskList}
+                updateTaskListTitle={this.updateTaskListTitle}
+                deleteTaskList={this.deleteTaskList}
 
-              //task functions
-              createTask={this.createTask}
-              updateTaskText={this.updateTaskText}
-              updateTaskIsDone={this.updateTaskIsDone}
-              deleteTask={this.deleteTask}
-              />
-            </CarouselItem>)
-        }
-      </Carousel>
+                //task functions
+                createTask={this.createTask}
+                updateTaskText={this.updateTaskText}
+                updateTaskIsDone={this.updateTaskIsDone}
+                deleteTask={this.deleteTask}
+                />
+              </CarouselItem>)
+          }
+        </Carousel>
+      </span>
     );
   },
   componentDidMount: function(){
@@ -91,16 +114,20 @@ const TodoApp = React.createClass({
       });
     });
   },
-  //Board functions
-  updateBoardTitle: function(userId, boardId, newTitle){
-    Api.updateBoardTitle(userId, boardId, newTitle);
+  createBoard: function(userId){
+    return Api.createBoard(userId, "")
+    .then(data =>{
+      TodoAppData.addBoard(data.id, data.title, data.taskLists);
+      TodoAppData.userBoardIds.push(data.id);
+      this.setState({ data: TodoAppData });
 
-    this.setState(prevState =>{
-      prevState.data.getBoard(boardId).title = newTitle;
-      return { data: prevState.data };
+      UpdateData.listEditedId = null;
+      UpdateData.taskEditedId = null;
+      this.setState({ UpdateData });
+
+      return data;
     });
   },
-  //List functions
   createTaskList: function(userId, boardId){
     Api.createTaskList(userId, boardId, "")
     .then(data =>{
@@ -114,32 +141,6 @@ const TodoApp = React.createClass({
       this.setState({ UpdateData });
     });
   },
-  updateTaskListTitle: function(userId, boardId, listId, newTitle){
-    Api.updateTaskListTitle(userId, boardId, listId, newTitle);
-
-    this.setState(prevState =>{
-      prevState.data.getTaskList(boardId, listId).title = newTitle;
-      return { data: prevState.data };
-    });
-
-    UpdateData.listEditedId = listId;
-    UpdateData.taskEditedId = -1;
-    this.setState({ UpdateData });
-  },
-  deleteTaskList: function(userId, boardId, listId){
-    Api.deleteTaskList(userId, boardId, listId);
-
-    this.setState(prevState =>{
-      prevState.data.getBoard(boardId).deleteTaskList(listId);
-      return { data: prevState.data };
-    });
-
-    UpdateData.listEditedId = null;
-    UpdateData.taskEditedId = null;
-    this.setState({ UpdateData });
-  },
-
-  //Task functions
   createTask: function(userId, boardId, listId){
     Api.createTask(userId, boardId, listId, "", false)
     .then(data =>{
@@ -152,6 +153,26 @@ const TodoApp = React.createClass({
       UpdateData.taskEditedId = null;
       this.setState({ UpdateData });
     });
+  },
+  updateBoardTitle: function(userId, boardId, newTitle){
+    Api.updateBoardTitle(userId, boardId, newTitle);
+
+    this.setState(prevState =>{
+      prevState.data.getBoard(boardId).title = newTitle;
+      return { data: prevState.data };
+    });
+  },
+  updateTaskListTitle: function(userId, boardId, listId, newTitle){
+    Api.updateTaskListTitle(userId, boardId, listId, newTitle);
+
+    this.setState(prevState =>{
+      prevState.data.getTaskList(boardId, listId).title = newTitle;
+      return { data: prevState.data };
+    });
+
+    UpdateData.listEditedId = listId;
+    UpdateData.taskEditedId = -1;
+    this.setState({ UpdateData });
   },
   updateTaskText: function(userId, boardId, listId, taskId, newText){
     Api.updateTaskText(userId, boardId, listId, taskId, newText);
@@ -175,6 +196,18 @@ const TodoApp = React.createClass({
 
     UpdateData.listEditedId = listId;
     UpdateData.taskEditedId = taskId;
+    this.setState({ UpdateData });
+  },
+  deleteTaskList: function(userId, boardId, listId){
+    Api.deleteTaskList(userId, boardId, listId);
+
+    this.setState(prevState =>{
+      prevState.data.getBoard(boardId).deleteTaskList(listId);
+      return { data: prevState.data };
+    });
+
+    UpdateData.listEditedId = null;
+    UpdateData.taskEditedId = null;
     this.setState({ UpdateData });
   },
   deleteTask: function(userId, boardId, listId, taskId){

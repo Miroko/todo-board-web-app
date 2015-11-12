@@ -124,7 +124,7 @@ app.post('/api/user/:userId/board', function (req, res){
     req.body.title);
 
   res.status(201);
-  res.send({ id: boardId, taskLists: [] });
+  res.send({ id: boardId, title: req.body.title, taskLists: [] });
 });
 app.post('/api/user/:userId/board/:boardId/list', function (req, res){
   const title = req.body.title
