@@ -32,7 +32,7 @@ const List = React.createClass({
       this.props.boardId,
       this.props.listId);
   },
-  shouldComponentUpdate: function(nextProps, nextState) {
+  shouldComponentUpdate: function(nextProps, nextState){
     if(this.props.updateData.listEditedId === null) return true;
     else if(this.props.updateData.listEditedId === this.props.listId) return true;
     return true;

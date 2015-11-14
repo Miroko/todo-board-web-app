@@ -3,10 +3,26 @@ body{
   padding-top: 65px;
 }
 
+.login-panel{
+  margin-left: 10%;
+  margin-right: 10%;
+  @media (min-width: 600px){
+    margin-left: 30%;
+    margin-right: 30%;
+  }
+  text-align: center;
+  .login-button{
+    margin-top: 30px;
+  }
+}
+
 .board-carousel{
-  .carousel-control {
+  .carousel-control{
     position: fixed;
     width: 40px;
+  }
+  .carousel-indicators{
+    visibility: hidden;
   }
 }
 

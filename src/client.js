@@ -5,14 +5,13 @@ import ReactDOM from 'react-dom';
 import { Router, Route } from 'react-router'
 import { createHistory } from 'history';
 
-import Main from './components/main'
-import TodoApp from './components/todo-app'
+import TodoAppView from './app/todo-app-view'
 
 const history = createHistory();
 
 const routes = (
   <Router history={history}>
-    <Route path="/:userId" component={TodoApp}>
+    <Route path="/*" component={TodoAppView}>
     </Route>
   </Router>
 );

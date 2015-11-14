@@ -1,6 +1,4 @@
 
-import Api from '../api'
-
 const Task = {
   id: null,
   text: "",
@@ -97,80 +95,16 @@ const Board = {
   }
 }
 
-const TodoAppData = {
+const TodoAppModel = {
   userId: null,
   userBoardIds: [],
   loadedBoards: [],
-  currentBoardIndex: null,
-
-  isEmpty: function(){
-    return this.loadedBoards.length === 0;
-  },
 
   //RESET
   reset: function(){
+    this.userId = null;
     this.userBoardIds = [];
     this.loadedBoards = [];
-    this.currentBoardIndex = 0;
-  },
-
-  //LOAD
-  loadUser: function(userId){
-    return new Promise((resolve, reject) => {
-      return Api.getUser(userId)
-      .then(userJSON => {
-          this.userId = userJSON.id;
-          this.userBoardIds = userJSON.boardIds;
-          resolve(true);
-      });
-    });
-  },
-  loadBoards: function(){
-    let requests = [];
-    this.userBoardIds.forEach(boardId =>{
-      requests.push(new Promise((resolve, reject) => {
-        return Api.getBoard(this.userId, boardId).then(boardJSON => {
-          return resolve(boardJSON);
-        });
-      }));
-    });
-    return Promise.all(requests).then(boardJSONs => {
-      boardJSONs.forEach(boardJSON =>{
-        this.addBoard(boardJSON.id, boardJSON.title, boardJSON.taskLists);
-      });
-      return true;
-    });
-  },
-
-  //SELECT
-  selectNextBoard: function(){
-    this.currentBoardIndex++;
-    if(this.currentBoardIndex > this.userBoardIds.length - 1){
-      this.currentBoardIndex = 0;
-    }
-  },
-  selectPreviousBoard: function(){
-    this.currentBoardIndex--;
-    if(this.currentBoardIndex < 0){
-      this.currentBoardIndex = this.userBoardIds.length - 1;
-    }
-  },
-  selectBoard: function(boardId){
-    for(let index = 0; index <= this.userBoardIds.length - 1; index++){
-      if(this.userBoardIds[index] === boardId){
-          this.currentBoardIndex = index;
-          return index;
-      }
-    }
-    return -1;
-  },
-
-  //GET
-  getBoardsForCarousel: function(){
-    return this.loadedBoards;
-  },
-  getCurrentBoard: function(){
-    return this.loadedBoards[this.currentBoardIndex];
   },
 
   getBoard: function(boardId){
@@ -226,4 +160,4 @@ const TodoAppData = {
   },
 }
 
-export default TodoAppData;
+export default TodoAppModel;
