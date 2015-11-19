@@ -26,17 +26,20 @@ const Login = React.createClass({
     }
     else{
       TodoAppController.getModel().reset();
-      TodoAppController.loadInitialData(1);
+      TodoAppController.loadInitialData(1).then(loaded =>{
+        TodoAppController.sortSelectedBoardByUndoneTasks();
+      });
     }
   },
   render: function() {
     return (
-      <Panel className="login-panel">
+      <Panel
+      className="login-panel"
+      >
          <Input
          ref="username"
-         className="text-center"
          type="text"
-         label="Username"
+         placeholder="Username"
          bsStyle={()=>{
            if(this.state.usernameValid) return null
            else                         return "error"
@@ -44,17 +47,15 @@ const Login = React.createClass({
          />
          <Input
          ref="password"
-         className="text-center"
          type="password"
-         label="Password"
+         placeholder="Password"
          bsStyle={()=>{
            if(this.state.passwordValid) return null
            else                         return "error"
          }()}
          />
          <Button
-         className="login-button"
-         block onClick={this.tryLogin}
+         onClick={this.tryLogin}
          bsSize="large">
          Login
          </Button>

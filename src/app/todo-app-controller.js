@@ -26,6 +26,12 @@ const TodoAppController = {
     return TodoAppModel.userId;
   },
 
+  //SORT
+  sortSelectedBoardByUndoneTasks: function(){
+    TodoAppController.getSelectedBoard().sortByUndoneTasks();
+    TodoAppController.modelChanged();
+  },
+
   //SELECT
   selectNextBoard: function(){
     TodoAppController.selectedBoardIndex++;
@@ -97,9 +103,9 @@ const TodoAppController = {
     return TodoAppController.updateData;
   },
   getBoardsForCarousel: function(){
-    return TodoAppModel.loadedBoards;
+    return TodoAppModel.loadedBoards.slice(TodoAppController.selectedBoardIndex, TodoAppController.selectedBoardIndex + 1);
   },
-  getCurrentBoard: function(){
+  getSelectedBoard: function(){
     return TodoAppModel.loadedBoards[TodoAppController.selectedBoardIndex];
   },
 

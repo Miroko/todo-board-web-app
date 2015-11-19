@@ -9,12 +9,14 @@ const Task = React.createClass({
      });
   },
   componentDidMount(){
-    this.expandTextAreaToText();
+    this.adjustTextAreaToText();
   },
-  expandTextAreaToText: function(){
+  adjustTextAreaToText: function(){
     const element = this.refs.taskText.refs.input;
     const style = window.getComputedStyle(element);
-    if(element.scrollHeight > parseInt(style.height)){
+    const elementHeight = parseInt(style.height);
+    if(element.scrollHeight != elementHeight){
+      element.style.height = "auto"; //auto shrink
       element.style.height = String(element.scrollHeight) + "px";
     }
   },
@@ -59,7 +61,7 @@ const Task = React.createClass({
       )};
     });
 
-    this.expandTextAreaToText();
+    this.adjustTextAreaToText();
   },
   updateIsDone: function(newIsDone){
     this.props.updateTaskIsDone(
@@ -92,7 +94,7 @@ const Task = React.createClass({
   },
   render: function(){
     const textAreaWithButton =
-    <span className="task">
+    <div className="task">
       <Input
       className="task-text"
       ref="taskText"
@@ -124,7 +126,7 @@ const Task = React.createClass({
         )()}
         </Button>}
       />
-    </span>
+    </div>
     return(textAreaWithButton);
   }
 })

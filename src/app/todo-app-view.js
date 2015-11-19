@@ -13,32 +13,31 @@ const TodoAppView = React.createClass({
       model: null,
     });
   },
-  carouselOnSelect: function(selectedIndex, selectedDirection) {
+  carouselOnSelect: function(selectedIndex, selectedDirection){
     if(selectedDirection === "next") TodoAppController.selectNextBoard();
     else if(selectedDirection === "prev") TodoAppController.selectPreviousBoard();
     else return;
 
-    this.carouselSlideTo(selectedIndex, selectedDirection);
+    this.carouselShowSelectedBoard();
   },
-  carouselSlideTo: function(index, slideDirection){
-    TodoAppController.getCurrentBoard().sortByUndoneTasks();
-
+  carouselShowSelectedBoard: function(){
+    TodoAppController.sortSelectedBoardByUndoneTasks();
     this.setState({
-      carouselIndex: index,
-      carouselDirection: slideDirection
+      carouselIndex: 0,
+      carouselDirection: null,
+    });
+  },
+  addNewBoard: function(){
+    TodoAppController.createBoard(this.state.model.userId)
+    .then(board =>{
+      TodoAppController.selectBoard(board.id);
+      this.carouselShowSelectedBoard();
     });
   },
   addNewListToCurrentBoard: function(){
     TodoAppController.createTaskList(
       this.state.model.userId,
-      TodoAppController.getCurrentBoard().id);
-  },
-  addNewBoard: function(){
-    TodoAppController.createBoard(this.state.model.userId)
-    .then(board =>{
-      const index = TodoAppController.selectBoard(board.id);
-      this.carouselSlideTo(index, "next");
-    });
+      TodoAppController.getSelectedBoard().id);
   },
   logout: function(){
     TodoAppController.getModel().userId = null;
@@ -53,25 +52,35 @@ const TodoAppView = React.createClass({
 
     if(this.state.model === null) return null;
     return (
-      <span>
-        <Navbar className="navbar-fixed-top">
-          <Nav>
-            <NavItem className="btn" onClick={this.addNewListToCurrentBoard}>New List</NavItem>
-            <NavItem className="btn" onClick={this.addNewBoard}>New Board</NavItem>
-          </Nav>
-          <Nav right>
-            <NavItem className="btn" onClick={this.logout}>Logout</NavItem>
-          </Nav>
+      <div>
+      <Navbar className="navbar-fixed-top">
+          <Navbar.Header>
+            <Navbar.Brand>
+              Todo-Boards
+            </Navbar.Brand>
+            <Navbar.Toggle/>
+          </Navbar.Header>
+          <Navbar.Collapse>
+            <Nav>
+              <NavItem onClick={this.addNewListToCurrentBoard}>New List</NavItem>
+              <NavItem onClick={this.addNewBoard}>New Board</NavItem>
+              <NavItem onClick={TodoAppController.sortSelectedBoardByUndoneTasks}>Sort</NavItem>
+            </Nav>
+            <Nav pullRight>
+              <NavItem onClick={this.logout}>Logout</NavItem>
+            </Nav>
+          </Navbar.Collapse>
         </Navbar>
         <Carousel
         className="board-carousel"
         activeIndex={this.state.carouselIndex}
         direction={this.state.carouselDirection}
-        onSelect={this.carouselOnSelect}>
+        onSelect={this.carouselOnSelect}
+        >
           {
             TodoAppController.getBoardsForCarousel().map((board, index) =>
               <CarouselItem
-              key={index}
+              key={board.id}
               index={index}>
                 <Board
                 userId={this.state.model.userId}
@@ -100,7 +109,7 @@ const TodoAppView = React.createClass({
               </CarouselItem>)
           }
         </Carousel>
-      </span>
+      </div>
     );
   },
   componentDidMount: function(){

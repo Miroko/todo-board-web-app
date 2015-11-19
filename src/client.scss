@@ -1,18 +1,24 @@
 
 body{
-  padding-top: 65px;
+  padding-top: 51px;
 }
 
 .login-panel{
-  margin-left: 10%;
-  margin-right: 10%;
+  @media(max-width: 600px){
+    margin-left: 5%;
+    margin-right: 5%;
+  }
   @media (min-width: 600px){
     margin-left: 30%;
     margin-right: 30%;
   }
-  text-align: center;
-  .login-button{
-    margin-top: 30px;
+  .form-control{
+    text-align: center;
+  }
+  .btn{
+    display: block;
+    width: 100%;
+
   }
 }
 
@@ -35,7 +41,23 @@ body{
   }
 }
 
+.masonry-grid{
+  margin: 40px;
+  .masonry-grid-item{
+    @media(min-width: 400px){
+      width: 100%;
+    }
+    @media(min-width: 600px){
+      width: 50%;
+    }
+    @media(min-width: 900px){
+      width: 25%;
+    }
+  }
+}
+
 .task-list{
+  margin: 6px;
   .panel-heading{
     padding: 10px;
   }
@@ -51,7 +73,7 @@ body{
   margin: 0px;
   .task-text{
     overflow: hidden;
-    resize: vertical;
+    resize: none;
   }
   .task-button{
 

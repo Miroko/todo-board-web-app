@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
-import './client.css';
+import './client.min.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Route } from 'react-router'
