@@ -53,7 +53,7 @@ const TodoAppView = React.createClass({
     if(this.state.model === null) return null;
     return (
       <div>
-      <Navbar className="navbar-fixed-top">
+        <Navbar className="app-navbar navbar-fixed-top">
           <Navbar.Header>
             <Navbar.Brand>
               Todo-Boards

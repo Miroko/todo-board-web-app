@@ -1,81 +1,205 @@
 
-body{
+#app{
+  $color-bg: black;
+  $color-bg-lightened: lighten($color-bg, 12%);
+  $color-text: white;
+  $carousel-margin: 40px;
+
+  position: absolute;
   padding-top: 51px;
-}
+  width: 100%;
+  min-height: 100%;
+  background-color: $color-bg;
 
-.login-panel{
-  @media(max-width: 600px){
-    margin-left: 5%;
-    margin-right: 5%;
+  //extendable components
+  .app-border{
+    border-radius: 0px;
   }
-  @media (min-width: 600px){
-    margin-left: 30%;
-    margin-right: 30%;
+  .app-border:focus{
+    -webkit-box-shadow: none;
+    box-shadow: none;
   }
-  .form-control{
-    text-align: center;
+  .app-panel-1{
+    @extend .app-border;
+    background-color: $color-bg;
+    border-color: $color-bg;
+    color: $color-text;
   }
-  .btn{
-    display: block;
-    width: 100%;
+  .app-panel-2{
+    @extend .app-panel-1;
+    background-color: $color-bg-lightened;
+    border-color: $color-bg-lightened;
+  }
 
+  .app-navbar{
+    @extend .app-panel-1;
+    .navbar-brand{
+      font-weight: bold;
+      color: $color-text;
+    }
+    .navbar-toggle{
+      @extend .app-panel-1;
+      .icon-bar{
+        background-color: $color-text;
+        width: 26px;
+        height: 3px;
+      }
+    }
+    .navbar-nav{
+      text-align: center;
+      a{
+        font-weight: bold;
+        color: $color-text;
+      }
+    }
   }
-}
 
-.board-carousel{
-  .carousel-control{
-    position: fixed;
-    width: 40px;
-  }
-  .carousel-indicators{
-    visibility: hidden;
-  }
-}
-
-.board{
-  .board-grid-cell{
-    padding: 3px;
-  }
-  .board-grid{
-    padding: 45px;
-  }
-}
-
-.masonry-grid{
-  margin: 40px;
-  .masonry-grid-item{
-    @media(min-width: 400px){
+  .login-panel{
+    @extend .app-panel-2;
+    @media(max-width: 600px){
+      margin-left: 5%;
+      margin-right: 5%;
+    }
+    @media (min-width: 600px){
+      margin-left: 30%;
+      margin-right: 30%;
+    }
+    .form-control{
+      @extend .app-border;
+      background-color: darken($color-bg-lightened, 5%);
+      color: $color-text;
+      text-align: center;
+    }
+    .btn{
+      @extend .app-border;
+      background-color: darken($color-bg-lightened, 5%);
+      color: $color-text;
+      font-weight: bold;
+      display: block;
       width: 100%;
     }
-    @media(min-width: 600px){
-      width: 50%;
+  }
+
+  .board-carousel{
+    .carousel-control{
+      background-image: none;
+      position: fixed;
+      width: $carousel-margin;
+      .glyphicon{
+        font-size: 32px;
+      }
     }
-    @media(min-width: 900px){
-      width: 25%;
+    .carousel-indicators{
+      visibility: hidden;
     }
-  }
-}
-
-.task-list{
-  margin: 6px;
-  .panel-heading{
-    padding: 10px;
-  }
-  .panel-body{
-    padding: 0px;
-  }
-  .form-group{
-    margin: 1px;
-  }
-}
-
-.task{
-  margin: 0px;
-  .task-text{
-    overflow: hidden;
-    resize: none;
-  }
-  .task-button{
-
+    .carousel-inner{
+      .board{
+        .board-title{
+          @extend .app-panel-2;
+          text-align: center;
+          font-weight: bold;
+        }
+        .masonry-grid{
+          margin-left: $carousel-margin;
+          margin-right: $carousel-margin;
+          .masonry-grid-item{
+            @media(min-width: 400px){
+              width: 100%;
+            }
+            @media(min-width: 600px){
+              width: 50%;
+            }
+            @media(min-width: 900px){
+              width: 25%;
+            }
+            .task-list{
+              @extend .app-panel-1;
+              margin: 13px;
+              .panel-heading{
+                @extend .app-panel-1;
+                padding: 0px;
+                .title-text{
+                  float: left;
+                  width: 80%;
+                  .form-group{
+                    margin-bottom: 3px;
+                    .form-control{
+                      @extend .app-panel-2;
+                      text-align: center;
+                      font-weight: bold;
+                    }
+                  }
+                }
+                .button-remove{
+                  float: left;
+                  width: 20%;
+                  .btn{
+                    @extend .app-panel-2;
+                    width: 100%;
+                  }
+                  .btn-danger{
+                    .glyphicon{
+                      color: #d9534f;
+                    }
+                  }
+                  .btn-danger:hover{
+                    .glyphicon{
+                      color: darken(desaturate(#d9534f, 10%), 20%);
+                    }
+                  }
+                }
+              }
+              .panel-body{
+                padding: 0px;
+                .form-group{
+                  margin-bottom: 2px;
+                }
+                .task{
+                  .text{
+                    float: left;
+                    width: 80%;
+                    .form-control{
+                      @extend .app-panel-2;
+                      background-color: $color-bg-lightened;
+                      color: $color-text;
+                      overflow: hidden;
+                      resize: none;
+                      text-align: center;
+                    }
+                  }
+                  .button-done{
+                    float: left;
+                    width: 20%;
+                    .btn{
+                      @extend .app-panel-2;
+                      width: 100%;
+                      height: 100%;
+                      .glyphicon{
+                        color: darken($color-text, 80%);
+                      }
+                    }
+                    .btn-success{
+                      .glyphicon{
+                        color: #3c763d;
+                      }
+                    }
+                    .btn-success:hover{
+                      .glyphicon{
+                        color: darken(desaturate(#3c763d, 0%), 10%);
+                      }
+                    }
+                    .btn:disabled{
+                      .glyphicon{
+                        color: darken(desaturate($color-text, 10%), 80%);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

@@ -32,7 +32,7 @@ const Board = React.createClass({
       <div className="board">
         <Input
         ref="title"
-        className="text-center"
+        className="board-title"
         type="text"
         bsSize="large"
         defaultValue={this.props.title}
@@ -47,9 +47,9 @@ const Board = React.createClass({
               this.props.taskLists.map((taskList, index) =>
               <div
               className="masonry-grid-item"
+              key={taskList.id}
               >
                 <TaskList
-                key={taskList.id}
                 userId={this.props.userId}
                 boardId={this.props.boardId}
                 listId={taskList.id}

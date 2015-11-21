@@ -152,6 +152,9 @@ const TodoAppController = {
 
     TodoAppModel.getBoard(boardId).title = newTitle;
 
+    TodoAppController.updateData.listEditedId = -1;
+    TodoAppController.updateData.taskEditedId = -1;
+
     TodoAppController.modelChanged();
   },
   updateTaskListTitle: function(userId, boardId, listId, newTitle){

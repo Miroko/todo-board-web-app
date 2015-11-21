@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Button } from 'react-bootstrap';
+import { Input, Button, Glyphicon } from 'react-bootstrap';
 
 const Task = React.createClass({
   getInitialState: function(){
@@ -95,37 +95,31 @@ const Task = React.createClass({
   render: function(){
     const textAreaWithButton =
     <div className="task">
-      <Input
-      className="task-text"
-      ref="taskText"
-      type="textarea"
-      placeholder={this.props.placeholder}
-      defaultValue={this.props.text}
-      onChange={this.startUpdateText}
-      bsStyle={(()=>{
-          if(this.props.text === "") return null;
-          else if(this.props.isDone) return "success";
-          else                       return "error";
-      })()}
-      addonAfter={
+      <div className="text">
+        <Input
+        ref="taskText"
+        type="textarea"
+        placeholder={this.props.placeholder}
+        defaultValue={this.props.text}
+        onChange={this.startUpdateText}
+        bsStyle={(()=>{
+            if(this.props.isDone) return "success";
+            else                  return null;
+        })()}
+        />
+      </div>
+      <div className="button-done">
         <Button
-        className="task-button"
         onClick={this.startUpdateIsDone}
         disabled={this.props.text === "" ? true : false}
         bsStyle={(()=>{
-            if(this.props.text === "") return null;
-            else if(this.props.isDone) return "success";
-            else                       return "danger";
+            if(this.props.isDone) return "success";
+            else                  return null;
         })()}
         >
-        {(()=>{
-          if(this.props.text === "") return "Todo";
-          else if(this.props.isDone) return "Undo";
-          else                       return "Done";
-          }
-        )()}
-        </Button>}
-      />
+          <Glyphicon glyph="ok" />
+        </Button>
+      </div>
     </div>
     return(textAreaWithButton);
   }

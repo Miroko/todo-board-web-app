@@ -1,5 +1,5 @@
 import React from 'react';
-import { Panel, Input, Button } from 'react-bootstrap';
+import { Panel, Input, Button, Glyphicon } from 'react-bootstrap';
 
 import Task from './task';
 
@@ -43,17 +43,24 @@ const List = React.createClass({
       className="task-list"
       header=
         {
-          <span className="input-group">
-            <Input
-            ref="title"
-            type="text"
-            placeholder="Add title..."
-            defaultValue={this.props.title}
-            onChange={this.startUpdatetitle}/>
-            <span className="input-group-btn">
-              <Button onClick={this.removeList}>Remove</Button>
-            </span>
-          </span>
+          <div>
+            <div className="title-text">
+              <Input
+              bsSize="large"
+              ref="title"
+              type="text"
+              placeholder="Add title..."
+              defaultValue={this.props.title}
+              onChange={this.startUpdatetitle}/>
+            </div>
+            <div className="button-remove">
+              <Button
+              onClick={this.removeList}
+              bsStyle="danger">
+                <Glyphicon glyph="remove" />
+              </Button>
+            </div>
+          </div>
         }>
         {
          this.props.tasks.map((task, index) =>
