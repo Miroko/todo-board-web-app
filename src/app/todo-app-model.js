@@ -10,7 +10,7 @@ const Task = {
     this.isDone = isDone;
     return this;
   }
-}
+};
 
 const TaskList = {
   id: null,
@@ -40,7 +40,7 @@ const TaskList = {
       else return false;
     });
   }
-}
+};
 
 const Board = {
   id: null,
@@ -83,7 +83,7 @@ const Board = {
           if(!task.isDone) undoneAmount++;
         });
         return undoneAmount;
-      }
+      };
       const unDoneTasksDifference = unDoneTaskAmount(listB) - unDoneTaskAmount(listA);
       if(unDoneTasksDifference === 0){
         return listB.tasks.length - listA.tasks.length;
@@ -93,7 +93,7 @@ const Board = {
       }
     });
   }
-}
+};
 
 const TodoAppModel = {
   userId: null,
@@ -125,16 +125,16 @@ const TodoAppModel = {
     taskListsJSON.forEach(taskListJSON =>{
       const tasks = [];
       taskListJSON.tasks.forEach(taskJSON =>{
-        tasks.push(Object.create(Task).init(taskJSON.id, taskJSON.text, taskJSON.isDone));
+        tasks.push(Object.create(Task).init(taskJSON._id, taskJSON.text, taskJSON.isDone));
       });
-      taskLists.push(Object.create(TaskList).init(taskListJSON.id, taskListJSON.title, tasks));
+      taskLists.push(Object.create(TaskList).init(taskListJSON._id, taskListJSON.title, tasks));
     });
     this.loadedBoards.push(Object.create(Board).init(boardId, title, taskLists));
   },
   addTaskList: function(boardId, listId, title, tasksJSON){
     const tasks = [];
     tasksJSON.forEach(taskJSON =>{
-      tasks.push(Object.create(Task).init(taskJSON.id, taskJSON.text, taskJSON.isDone));
+      tasks.push(Object.create(Task).init(taskJSON._id, taskJSON.text, taskJSON.isDone));
     });
     this.getBoard(boardId).addTaskList(Object.create(TaskList).init(listId, title, tasks));
   },
@@ -155,9 +155,9 @@ const TodoAppModel = {
   deleteTaskList: function(boardId, listId){
     return this.getBoard(boardId).deleteTaskList(listId);
   },
-  deleteBoard: function(boardId, listId, taskId){
+  deleteTask: function(boardId, listId, taskId){
     return this.getBoard(boardId).getTaskList(listId).deleteTask(taskId);
-  },
-}
+  }
+};
 
 export default TodoAppModel;

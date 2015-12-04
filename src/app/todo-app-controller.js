@@ -1,6 +1,6 @@
 
-import TodoAppModel from './todo-app-model'
-import Api from './api'
+import TodoAppModel from "./todo-app-model";
+import Api from "./api";
 
 const TodoAppController = {
   modelChanged: null, //function
@@ -58,6 +58,17 @@ const TodoAppController = {
   //LOAD
   loadInitialData: function(userId){
     return TodoAppController.loadUser(userId).then(loaded => {
+      TodoAppController.updateData.listEditedId = null;
+      TodoAppController.updateData.taskEditedId = null;
+
+      TodoAppController.selectedBoardIndex = 0;
+
+      TodoAppController.modelChanged();
+
+      return true;
+    });
+    /*
+    return TodoAppController.loadUser(userId).then(loaded => {
       return TodoAppController.loadBoards().then(loaded => {
 
         TodoAppController.updateData.listEditedId = null;
@@ -70,17 +81,24 @@ const TodoAppController = {
         return true;
       });
     });
+    */
   },
   loadUser: function(userId){
     return new Promise((resolve, reject) => {
       return Api.getUser(userId)
       .then(userJSON => {
-          TodoAppModel.userId = userJSON.id;
-          TodoAppModel.userBoardIds = userJSON.boardIds;
+          TodoAppModel.userId = userJSON._id;
+
+          userJSON.boards.forEach(boardJSON =>{
+            TodoAppModel.userBoardIds.push(boardJSON._id);
+            TodoAppModel.addBoard(boardJSON._id, boardJSON.title, boardJSON.taskLists);
+          });
+
           resolve(true);
       });
     });
   },
+  /*
   loadBoards: function(){
     let requests = [];
     TodoAppModel.userBoardIds.forEach(boardId =>{
@@ -97,7 +115,7 @@ const TodoAppController = {
       return true;
     });
   },
-
+*/
   //GET
   getUpdateData: function(){
     return TodoAppController.updateData;
@@ -111,24 +129,24 @@ const TodoAppController = {
 
   //CREATE
   createBoard: function(userId){
-    return Api.createBoard(userId, "")
-    .then(data =>{
-      TodoAppModel.addBoard(data.id, data.title, data.taskLists);
+    return Api.createBoard(userId)
+    .then(boardJSON =>{
+      TodoAppModel.addBoard(boardJSON._id, boardJSON.title, boardJSON.taskLists);
 
-      TodoAppModel.userBoardIds.push(data.id);
+      TodoAppModel.userBoardIds.push(boardJSON._id);
 
       TodoAppController.updateData.listEditedId = null;
       TodoAppController.updateData.taskEditedId = null;
 
       TodoAppController.modelChanged();
 
-      return data;
+      return boardJSON;
     });
   },
   createTaskList: function(userId, boardId){
-    Api.createTaskList(userId, boardId, "")
-    .then(data =>{
-      TodoAppModel.addTaskList(boardId, data.id, data.title, data.tasks);
+    Api.createTaskList(userId, boardId)
+    .then(taskListJSON =>{
+      TodoAppModel.addTaskList(boardId, taskListJSON._id, taskListJSON.title, taskListJSON.tasks);
 
       TodoAppController.updateData.listEditedId = null;
       TodoAppController.updateData.taskEditedId = null;
@@ -137,9 +155,9 @@ const TodoAppController = {
     });
   },
   createTask: function(userId, boardId, listId){
-    Api.createTask(userId, boardId, listId, "", false)
-    .then(data =>{
-      TodoAppModel.addTask(boardId, listId, data.id, data.text, data.isDone);
+    Api.createTask(userId, boardId, listId)
+    .then(taskJSON =>{
+      TodoAppModel.addTask(boardId, listId, taskJSON._id, taskJSON.text, taskJSON.isDone);
 
       TodoAppController.updateData.listEditedId = null;
       TodoAppController.updateData.taskEditedId = null;
@@ -149,7 +167,6 @@ const TodoAppController = {
   },
   updateBoardTitle: function(userId, boardId, newTitle){
     Api.updateBoardTitle(userId, boardId, newTitle);
-
     TodoAppModel.getBoard(boardId).title = newTitle;
 
     TodoAppController.updateData.listEditedId = -1;
@@ -159,7 +176,6 @@ const TodoAppController = {
   },
   updateTaskListTitle: function(userId, boardId, listId, newTitle){
     Api.updateTaskListTitle(userId, boardId, listId, newTitle);
-
     TodoAppModel.getTaskList(boardId, listId).title = newTitle;
 
     TodoAppController.updateData.listEditedId = listId;
@@ -169,7 +185,6 @@ const TodoAppController = {
   },
   updateTaskText: function(userId, boardId, listId, taskId, newText){
     Api.updateTaskText(userId, boardId, listId, taskId, newText);
-
     TodoAppModel.getTask(boardId, listId, taskId).text = newText;
 
     TodoAppController.updateData.listEditedId = listId;
@@ -179,7 +194,6 @@ const TodoAppController = {
   },
   updateTaskIsDone: function(userId, boardId, listId, taskId, newIsDone){
     Api.updateTaskIsDone(userId, boardId, listId, taskId, newIsDone);
-
     TodoAppModel.getTask(boardId, listId, taskId).isDone = newIsDone;
 
     TodoAppController.updateData.listEditedId = listId;
@@ -189,7 +203,6 @@ const TodoAppController = {
   },
   deleteTaskList: function(userId, boardId, listId){
     Api.deleteTaskList(userId, boardId, listId);
-
     TodoAppModel.getBoard(boardId).deleteTaskList(listId);
 
     TodoAppController.updateData.listEditedId = null;
@@ -198,8 +211,7 @@ const TodoAppController = {
     TodoAppController.modelChanged();
   },
   deleteTask: function(userId, boardId, listId, taskId){
-    Api.deleteTask(boardId, listId, taskId);
-
+    Api.deleteTask(userId, boardId, listId, taskId);
     TodoAppModel.getTaskList(boardId, listId).deleteTask(taskId);
 
     TodoAppController.updateData.listEditedId = listId;
@@ -207,6 +219,6 @@ const TodoAppController = {
 
     TodoAppController.modelChanged();
   }
-}
+};
 
 export default TodoAppController;

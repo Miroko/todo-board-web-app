@@ -29,8 +29,8 @@ const TodoAppView = React.createClass({
   },
   addNewBoard: function(){
     TodoAppController.createBoard(this.state.model.userId)
-    .then(board =>{
-      TodoAppController.selectBoard(board.id);
+    .then(boardJSON =>{
+      TodoAppController.selectBoard(boardJSON._id);
       this.carouselShowSelectedBoard();
     });
   },

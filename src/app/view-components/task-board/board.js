@@ -1,5 +1,5 @@
 import React from 'react';
-import { Panel, Grid, Row, Col, Button, PageHeader, Input } from 'react-bootstrap';
+import { PageHeader, Input } from 'react-bootstrap';
 
 var Masonry = require('react-masonry-component')(React);
 

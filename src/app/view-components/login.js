@@ -26,7 +26,7 @@ const Login = React.createClass({
     }
     else{
       TodoAppController.getModel().reset();
-      TodoAppController.loadInitialData(1).then(loaded =>{
+      TodoAppController.loadInitialData("56562763030c0af021c79f45").then(loaded =>{
         TodoAppController.sortSelectedBoardByUndoneTasks();
       });
     }
@@ -41,8 +41,8 @@ const Login = React.createClass({
          type="text"
          placeholder="Username"
          bsStyle={()=>{
-           if(this.state.usernameValid) return null
-           else                         return "error"
+           if(this.state.usernameValid) return null;
+           else                         return "error";
          }()}
          />
          <Input
@@ -50,8 +50,8 @@ const Login = React.createClass({
          type="password"
          placeholder="Password"
          bsStyle={()=>{
-           if(this.state.passwordValid) return null
-           else                         return "error"
+           if(this.state.passwordValid) return null;
+           else                         return "error";
          }()}
          />
          <Button

@@ -1,4 +1,6 @@
 
+//TODO: nesting max 2 
+
 #app{
   $color-bg: black;
   $color-bg-lightened: lighten($color-bg, 12%);
@@ -180,7 +182,7 @@
                     }
                     .btn-success{
                       .glyphicon{
-                        color: #3c763d;
+                        color: lighten(#3c763d, 15%);
                       }
                     }
                     .btn-success:hover{

@@ -1,273 +1,284 @@
-var port = 8888;
+import path from "path";
+import express from "express";
+import bodyParser from "body-parser";
+import mongoose from "mongoose";
+import webpack from "webpack";
+import config from "../webpack.config.dev";
 
-var path = require('path');
-var url = require('url');
-var express = require('express');
-var bodyParser = require('body-parser')
-var webpack = require('webpack');
-var config = require('../webpack.config.dev');
+const port = 8888;
 
-var app = express();
-var compiler = webpack(config);
+const app = express();
+const compiler = webpack(config);
 
 app.use(bodyParser.json());
-app.use(require('webpack-dev-middleware')(compiler, {
+app.use(require("webpack-dev-middleware")(compiler, {
   noInfo: true,
   publicPath: config.output.publicPath
 }));
-app.use(require('webpack-hot-middleware')(compiler));
+app.use(require("webpack-hot-middleware")(compiler));
 
-//ID
-var currentId = 0;
-function generateId(){
-  currentId = currentId + 1;
-  return currentId;
-}
+const TaskSchema = new mongoose.Schema({
+  _id: mongoose.Schema.ObjectId,
+  text: String,
+  isDone: Boolean
+});
+const TaskListSchema = new mongoose.Schema({
+  _id: mongoose.Schema.ObjectId,
+  title: String,
+  tasks: [ TaskSchema ]
+});
+const BoardSchema = new mongoose.Schema({
+  _id: mongoose.Schema.ObjectId,
+  title: String,
+  taskLists: [ TaskListSchema ]
+});
+const UserSchema = new mongoose.Schema({
+  _id: mongoose.Schema.ObjectId,
+  name: String,
+  password: String,
+  boards: [ BoardSchema ]
+});
 
-//DATABASE
-const database = new Map();
+const UserModel = mongoose.model("User", UserSchema);
 
-//INIT DEMO DATA
-const user1 = addUser("demouser", "demopassword");
-
-const boardId1 = addBoard(user1, "Demo board 1");
-const listId1 = addTaskList(user1, boardId1, "Demo list");
-const listId2 = addTaskList(user1, boardId1, "");
-const taskId1 = addTask(user1, boardId1, listId1, "Demo task", false);
-const taskId2 = addTask(user1, boardId1, listId1, "", false);
-const taskId3 = addTask(user1, boardId1, listId2, "", false);
-
-const boardId2 = addBoard(user1, "Demo board 2");
-const listId3 = addTaskList(user1, boardId2, "Demo list");
-const listId4 = addTaskList(user1, boardId2, "");
-const taskId4 = addTask(user1, boardId2, listId3, "Demo task", false);
-const taskId5 = addTask(user1, boardId2, listId3, "", false);
-const taskId6 = addTask(user1, boardId2, listId4, "", false);
-
-const boardId3 = addBoard(user1, "Demo board 3");
-const boardId4 = addBoard(user1, "Demo board 4");
-const boardId5 = addBoard(user1, "Demo board 5");
-
-//GET
-function getUser(userId){
-  return database.get(userId);
-}
-function getBoard(userId, boardId){
-  return getUser(userId).boards.get(boardId);
-}
-function getTaskList(userId, boardId, listId){
-  return getBoard(userId, boardId).taskLists.get(listId);
-}
-function getTask(userId, boardId, listId, taskId){
-  return getTaskList(userId, boardId, listId).tasks.get(taskId);
-}
-
-//ADD
-function addUser(name, password){
-  const userId = generateId();
-  database.set(userId, { name: name, password: password, boards: new Map() } );
-  return userId;
-}
-function addBoard(userId, boardTitle){
-  const boardId = generateId();
-  database.get(userId).boards.set(boardId, { title: boardTitle, taskLists: new Map() });
-  return boardId;
-}
-function addTaskList(userId ,boardId, listTitle){
-  const listId = generateId();
-  getBoard(userId, boardId).taskLists.set(listId, { title: listTitle, tasks: new Map() });
-  return listId;
-}
-function addTask(userId, boardId, listId, text, isDone){
-  const taskId = generateId();
-  getTaskList(userId, boardId, listId).tasks.set(taskId, { text: text, isDone: isDone });
-  return taskId;
-}
-
-//DELETE
-function deleteBoard(userId, boardId){
-  getUser(userId).boards.delete(boardI);
-}
-
-function deleteTaskList(userId, boardId, listId){
-  getBoard(userId, boardId).taskLists.delete(listId);
-}
-
-function deleteTask(userId, boardId, listId, taskId){
-  getTaskList(userId, boardId, listId).tasks.delete(taskId);
-}
-
-//UPDATE
-function updateBoardTitle(userId, boardId, newTitle){
-  getBoard(boardId).title = newTitle;
-}
-
-function updateListTitle(userId, boardId, listId, newTitle){
-  getTaskList(boardId, listId).title = newTitle;
-}
-
-function updateTaskText(userId, boardId, listId, taskId, newText){
-  getTask(boardId, listId, taskId).text = newText;
-}
-
-function updateTaskIsDone(userId, boardId, listId, taskId, newIsDone){
-  getTask(boardId, listId, taskId).isDone = newIsDone;
-}
-
-//REST API
+mongoose.connect("mongodb://localhost:27017/todoapp");
 
 //POST
-app.post('/api/user/:userId/board', function (req, res){
-  const boardId =
-  addBoard(
-    Number(req.params.userId),
-    req.body.title);
-
-  res.status(201);
-  res.send({ id: boardId, title: req.body.title, taskLists: [] });
+app.post("/api/user", (req, res) =>{
+  const user = new UserModel({
+    _id: mongoose.Types.ObjectId(),
+    name: req.body.name,
+    password: req.body.password,
+    boards: []
+  });
+  user.save((err, user) =>{
+    if(err) res.status(500).send();
+    else res.status(201).json(user);
+  });
 });
-app.post('/api/user/:userId/board/:boardId/list', function (req, res){
-  const title = req.body.title
+app.post("/api/user/:userId/board", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
 
-  const listId =
-    addTaskList(
-      Number(req.params.userId),
-      Number(req.params.boardId),
-      title);
-
-  const taskId =
-    addTask(
-      Number(req.params.userId),
-      Number(req.params.boardId),
-      Number(listId),
-      "",
-      false);
-
-  res.status(201);
-  res.send({ id: listId, title: title, tasks: [{ id: taskId, text: "", isDone: false }] });
+    const newBoard = {
+      _id: mongoose.Types.ObjectId(),
+      title: "",
+      taskLists: []
+    };
+    user.boards.push(newBoard);
+    user.save(function(err){
+      if(err) res.status(500).send();
+      res.status(201).json(newBoard);
+    });
+  });
 });
-app.post('/api/user/:userId/board/:boardId/list/:listId/task', function (req, res){
-  const text = req.body.text;
-  const isDone = req.body.isDone
+app.post("/api/user/:userId/board/:boardId/taskList", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
 
-  const taskId =
-    addTask(
-      Number(req.params.userId),
-      Number(req.params.boardId),
-      Number(req.params.listId),
-      text,
-      isDone);
+    const board = user.boards.id(req.params.boardId);
+    if(board === null) res.status(400).send();
 
-  res.status(201);
-  res.send({ id: taskId, text: text, isDone: isDone });
+    const newTask = {
+      _id: mongoose.Types.ObjectId(),
+      text: "",
+      isDone: false
+    };
+    const newTaskList = {
+      _id: mongoose.Types.ObjectId(),
+      title: "",
+      tasks: [ newTask ]
+    };
+    board.taskLists.push(newTaskList);
+    user.save(err =>{
+      if(err) res.status(500).send();
+      res.status(201).json(newTaskList);
+    });
+  });
+});
+app.post("/api/user/:userId/board/:boardId/taskList/:taskListId/task", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
+
+    const board = user.boards.id(req.params.boardId);
+    if(board === null) res.status(400).send();
+
+    const taskList = board.taskLists.id(req.params.taskListId);
+    if(taskList === null) res.status(400).send();
+
+    const newTask = {
+      _id: mongoose.Types.ObjectId(),
+      text: "",
+      isDone: false
+    };
+    taskList.tasks.push(newTask);
+    user.save(err =>{
+      if(err) res.status(500).send();
+      res.status(201).json(newTask);
+    });
+  });
 });
 
 //GET
-app.get('/api/user/:userId', function(req, res) {
-  const user = getUser(Number(req.params.userId));
-
-  var userJSON = {};
-  userJSON.id = Number(req.params.userId);
-  userJSON.boardIds = Array.from(user.boards.keys());
-
-  res.status(200);
-  res.send(userJSON);
+app.get("/api/user/:userId", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
+    res.status(200).json(user);
+  });
 });
-app.get('/api/user/:userId/board/:boardId', function (req, res) {
-  const board =
-    getBoard(
-      Number(req.params.userId),
-      Number(req.params.boardId));
+app.get("/api/user/:userId/board/:boardId", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
 
-  var boardJSON = {};
-  boardJSON.id = Number(req.params.boardId);
-  boardJSON.title = board.title;
-  boardJSON.taskLists = [];
-  board.taskLists.forEach((list, listKey, listsMap) => {
-    const index = boardJSON.taskLists.length;
-    boardJSON.taskLists[index] = { id: listKey, title: list.title, tasks: [] };
-    list.tasks.forEach((task, taskKey, tasksMap) => {
-      boardJSON.taskLists[index].tasks[boardJSON.taskLists[index].tasks.length] = { id: taskKey, text: task.text, isDone: task.isDone };
+    const board = user.boards.id(req.params.boardId);
+    if(board === null) res.status(400).send();
+
+    res.status(200).json(board);
+  });
+});
+
+//PATCH
+app.patch("/api/user/:userId/board/:boardId", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
+
+    const board = user.boards.id(req.params.boardId);
+    if(board === null) res.status(400).send();
+
+    let patched = false;
+    if(typeof req.body.title === "string"){
+       board.title = req.body.title;
+       patched = true;
+    }
+    if(!patched) res.status(400).send();
+
+    user.save(err =>{
+      if(err) res.status(500).send();
+      res.status(204).send();
     });
   });
-
-  res.status(200);
-  res.send(boardJSON);
 });
+app.patch("/api/user/:userId/board/:boardId/taskList/:taskListId", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
 
-//PUT
-app.put('/api/user/:userId/board/:boardId/title', function (req, res) {
-  const board = getBoard(
-    Number(req.params.userId),
-    Number(req.params.boardId));
-  board.title = req.body.title;
+    const board = user.boards.id(req.params.boardId);
+    if(board === null) res.status(400).send();
 
-  res.sendStatus(204);
+    const taskList = board.taskLists.id(req.params.taskListId);
+    if(taskList === null) res.status(400).send();
+
+    let patched = false;
+    if(typeof req.body.title === "string"){
+       taskList.title = req.body.title;
+       patched = true;
+    }
+    if(!patched) res.status(400).send();
+
+    user.save(err =>{
+      if(err) res.status(500).send();
+      res.status(204).send();
+    });
+  });
 });
-app.put('/api/user/:userId/board/:boardId/list/:listId/title', function (req, res) {
-  const taskList = getTaskList(
-    Number(req.params.userId),
-    Number(req.params.boardId),
-    Number(req.params.listId));
-  taskList.title = req.body.title;
+app.patch("/api/user/:userId/board/:boardId/taskList/:taskListId/task/:taskId", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
 
-  res.sendStatus(204);
-});
-app.put('/api/user/:userId/board/:boardId/list/:listId/task/:taskId/text', function (req, res) {
-  const task = getTask(
-    Number(req.params.userId),
-    Number(req.params.boardId),
-    Number(req.params.listId),
-    Number(req.params.taskId));
-  task.text = req.body.text;
+    const board = user.boards.id(req.params.boardId);
+    if(board === null) res.status(400).send();
 
-  res.sendStatus(204);
-});
-app.put('/api/user/:userId/board/:boardId/list/:listId/task/:taskId/isDone', function (req, res) {
-  const task = getTask(
-    Number(req.params.userId),
-    Number(req.params.boardId),
-    Number(req.params.listId),
-    Number(req.params.taskId));
-  task.isDone = req.body.isDone;
+    const taskList = board.taskLists.id(req.params.taskListId);
+    if(taskList === null) res.status(400).send();
 
-  res.sendStatus(204);
+    const task = taskList.tasks.id(req.params.taskId);
+    if(task === null) res.status(400).send();
+
+    let patched = false;
+    if(typeof req.body.text === "string"){
+       task.text = req.body.text;
+       patched = true;
+    }
+    if(typeof req.body.isDone === "boolean"){
+       task.isDone = req.body.isDone;
+       patched = true;
+    }
+    if(!patched) res.status(400).send();
+
+    user.save(err =>{
+      if(err) res.status(500).send();
+      res.status(204).send();
+    });
+  });
 });
 
 //DELETE
-app.delete('/api/user/:userId/board/:boardId', function (req, res) {
-  deleteBoard(
-    Number(req.params.userId),
-    Number(req.params.boardId));
+app.delete("/api/user/:userId/board/:boardId", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
 
-  res.sendStatus(204);
+    const board = user.boards.id(req.params.boardId);
+    if(board === null) res.status(400).send();
+
+    board.remove(err =>{
+      if(err) res.status(400).send();
+    });
+
+    user.save(err =>{
+      if(err) res.status(500).send();
+      res.status(204).send();
+    });
+  });
 });
-app.delete('/api/user/:userId/board/:boardId/list/:listId', function (req, res) {
-  deleteTaskList(
-    Number(req.params.userId),
-    Number(req.params.boardId),
-    Number(req.params.listId));
+app.delete("/api/user/:userId/board/:boardId/taskList/:taskListId", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
 
-  res.sendStatus(204);
+    const board = user.boards.id(req.params.boardId);
+    if(board === null) res.status(400).send();
+
+    const taskList = board.taskLists.id(req.params.taskListId);
+    if(taskList === null) res.status(400).send();
+
+    taskList.remove(err =>{
+      if(err) res.status(400).send();
+    });
+
+    user.save(err =>{
+      if(err) res.status(500).send();
+      res.status(204).send();
+    });
+  });
 });
-app.delete('/api/user/:userId/board/:boardId/list/:listId/task/:taskId', function (req, res) {
-  deleteTask(
-    Number(req.params.userId),
-    Number(req.params.boardId),
-    Number(req.params.listId),
-    Number(req.params.taskId));
+app.delete("/api/user/:userId/board/:boardId/taskList/:taskListId/task/:taskId", (req, res) =>{
+  UserModel.findById(req.params.userId, (err, user) =>{
+    if(err) res.status(400).send();
 
-  res.sendStatus(204);
+    const board = user.boards.id(req.params.boardId);
+    if(board === null) res.status(400).send();
+
+    const taskList = board.taskLists.id(req.params.taskListId);
+    if(taskList === null) res.status(400).send();
+
+    const task = taskList.tasks.id(req.params.taskId);
+    if(task === null) res.status(400).send();
+
+    task.remove(err =>{
+      if(err) res.status(400).send();
+    });
+
+    user.save(err =>{
+      if(err) res.status(500).send();
+      res.status(204).send();
+    });
+  });
 });
 
-app.get('*', function(req, res, next) {
-  res.sendFile(path.join(__dirname, '/../web/index.dev.html'));
+app.get("*", (req, res) =>{
+  res.sendFile(path.join(__dirname, "/../web/index.dev.html"));
 });
 
-app.listen(port, 'localhost', function(err) {
-  if (err) {
-    console.log(err);
-    return;
-  }
-  console.log('Listening at http://localhost:' + port);
+app.listen(port, "localhost", err =>{
+  if(err) console.log(err);
+  else console.log("Listening at http://localhost:" + port);
 });
